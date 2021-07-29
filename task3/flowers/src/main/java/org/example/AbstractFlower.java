@@ -1,4 +1,4 @@
-package org.example.flowers;
+package org.example;
 
 import java.util.Objects;
 

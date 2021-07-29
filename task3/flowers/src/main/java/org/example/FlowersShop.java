@@ -1,7 +1,5 @@
 package org.example;
 
-import org.example.flowers.Flower;
-
 import java.util.*;
 
 public class FlowersShop {

@@ -1,8 +1,5 @@
 package org.example;
 
-import org.example.flowers.Flower;
-import org.example.flowers.SpecificFlower;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -16,6 +13,7 @@ public class Main {
         try {
             Bouquet bouquet = Bouquet.build()
                     .addFlowers(flowersShop.findFlowerByName("Роза"), 2)
+                    .addFlowers(flowersShop.findFlowerByName("Хризантема"), 2)
                     .addFlowers(flowersShop.findFlowerByName("Хризантема"), 2)
                     .addFlowers(flowersShop.findFlowerByName("Тюльпан"), 2);
             double bouquetPrice = bouquet.computeBouquetPrice();

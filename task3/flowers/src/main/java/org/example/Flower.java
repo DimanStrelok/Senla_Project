@@ -1,4 +1,4 @@
-package org.example.flowers;
+package org.example;
 
 public interface Flower {
     String name();

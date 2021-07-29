@@ -1,7 +1,5 @@
 package org.example;
 
-import org.example.flowers.Flower;
-import org.example.flowers.SpecificFlower;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 

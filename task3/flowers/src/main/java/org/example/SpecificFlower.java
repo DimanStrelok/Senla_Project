@@ -1,4 +1,4 @@
-package org.example.flowers;
+package org.example;
 
 public class SpecificFlower extends AbstractFlower {
     private final String name;
