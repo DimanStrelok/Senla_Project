@@ -21,10 +21,9 @@ public class Bouquet {
     }
 
     public double computeBouquetPrice() {
-        return flowers.entrySet().stream().mapToDouble(entry -> {
-            double flowerPrice = entry.getKey().getPrice();
-            int flowersCount = entry.getValue();
-            return flowerPrice * flowersCount;
-        }).reduce(Double::sum).orElse(0.0);
+        return flowers.entrySet().stream()
+                .mapToDouble(entry -> entry.getKey().getPrice() * entry.getValue())
+                .reduce(Double::sum)
+                .orElse(0.0);
     }
 }
