@@ -1,10 +1,11 @@
 package org.example;
 
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.HashSet;
 import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class FlowersShopTest {
     @Test
@@ -14,8 +15,8 @@ class FlowersShopTest {
         FlowersShop flowersShop = new FlowersShop(flowers);
         assertDoesNotThrow(() -> flowersShop.findFlowerByName("Роза"));
         Flower flower = flowersShop.findFlowerByName("Роза");
-        assertEquals(flower.name(), "Роза");
-        assertEquals(flower.price(), 100.0);
+        assertEquals(flower.getName(), "Роза");
+        assertEquals(flower.getPrice(), 100.0);
     }
 
     @Test

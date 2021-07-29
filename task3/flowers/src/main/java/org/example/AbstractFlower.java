@@ -8,11 +8,11 @@ public abstract class AbstractFlower implements Flower {
         if (this == o) return true;
         if (!(o instanceof Flower)) return false;
         Flower flower = (Flower) o;
-        return Double.compare(flower.price(), price()) == 0 && name().equals(flower.name());
+        return Double.compare(flower.getPrice(), getPrice()) == 0 && getName().equals(flower.getName());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name(), price());
+        return Objects.hash(getName(), getPrice());
     }
 }

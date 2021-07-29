@@ -1,6 +1,6 @@
 package org.example;
 
-import java.util.*;
+import java.util.Set;
 
 public class FlowersShop {
     private final Set<Flower> flowers;
@@ -10,6 +10,9 @@ public class FlowersShop {
     }
 
     public Flower findFlowerByName(String name) {
-        return flowers.stream().filter(flower -> flower.name().equals(name)).findFirst().orElseThrow(() -> new FlowerNotFoundException(name));
+        return flowers.stream()
+                .filter(flower -> flower.getName().equals(name))
+                .findFirst()
+                .orElseThrow(() -> new FlowerNotFoundException(name));
     }
 }

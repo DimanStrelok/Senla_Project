@@ -1,7 +1,7 @@
 package org.example;
 
 public interface Flower {
-    String name();
+    String getName();
 
-    double price();
+    double getPrice();
 }

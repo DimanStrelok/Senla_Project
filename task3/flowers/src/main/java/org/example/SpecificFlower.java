@@ -10,12 +10,12 @@ public class SpecificFlower extends AbstractFlower {
     }
 
     @Override
-    public String name() {
+    public String getName() {
         return name;
     }
 
     @Override
-    public double price() {
+    public double getPrice() {
         return price;
     }
 }
