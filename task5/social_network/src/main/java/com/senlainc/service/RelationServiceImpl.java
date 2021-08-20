@@ -12,13 +12,13 @@ public class RelationServiceImpl implements RelationService {
 
     @Override
     public void createRelation(long fromAccountId, long toAccountId) {
-        Relation relation1 = new Relation();
-        relation1.setFromAccountId(fromAccountId);
-        relation1.setToAccountId(toAccountId);
-        relationRepository.create(relation1);
-        Relation relation2 = new Relation();
-        relation2.setFromAccountId(toAccountId);
-        relation2.setToAccountId(fromAccountId);
-        relationRepository.create(relation2);
+        Relation relationFromTo = new Relation();
+        relationFromTo.setFromAccountId(fromAccountId);
+        relationFromTo.setToAccountId(toAccountId);
+        relationRepository.create(relationFromTo);
+        Relation relationToFrom = new Relation();
+        relationToFrom.setFromAccountId(toAccountId);
+        relationToFrom.setToAccountId(fromAccountId);
+        relationRepository.create(relationToFrom);
     }
 }

@@ -18,7 +18,7 @@
             <column name="created_at" type="TIMESTAMP WITHOUT TIME ZONE">
                 <constraints nullable="false"/>
             </column>
-            <column name="status" type="INTEGER">
+            <column name="status" type="VARCHAR(32)">
                 <constraints nullable="false"/>
             </column>
         </createTable>

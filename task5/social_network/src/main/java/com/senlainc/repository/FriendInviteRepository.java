@@ -1,6 +1,7 @@
 package com.senlainc.repository;
 
 import com.senlainc.entity.FriendInvite;
+import com.senlainc.entity.FriendInviteStatus;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -32,7 +33,7 @@ public class FriendInviteRepository extends AbstractRepository<FriendInvite> {
             friendInvite.setFromAccountId(resultSet.getLong("from_account_id"));
             friendInvite.setToAccountId(resultSet.getLong("to_account_id"));
             friendInvite.setCreatedAt(resultSet.getTimestamp("created_at").toLocalDateTime());
-            friendInvite.setStatus(resultSet.getByte("status"));
+            friendInvite.setStatus(FriendInviteStatus.valueOf(resultSet.getString("status")));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -45,7 +46,7 @@ public class FriendInviteRepository extends AbstractRepository<FriendInvite> {
             ps.setLong(1, entity.getFromAccountId());
             ps.setLong(2, entity.getToAccountId());
             ps.setTimestamp(3, Timestamp.valueOf(entity.getCreatedAt()));
-            ps.setByte(4, entity.getStatus());
+            ps.setString(4, entity.getStatus().name());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

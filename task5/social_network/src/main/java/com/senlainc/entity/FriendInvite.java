@@ -14,5 +14,5 @@ public class FriendInvite {
     private Long fromAccountId;
     private Long toAccountId;
     private LocalDateTime createdAt;
-    private byte status;
+    private FriendInviteStatus status;
 }

@@ -3,15 +3,8 @@ package com.senlainc.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.senlainc.dto.CreateFriendInviteDto;
 import com.senlainc.dto.FriendInviteDto;
-import com.senlainc.entity.FriendInvite;
-import com.senlainc.entity.Relation;
-import com.senlainc.repository.FriendInviteRepository;
-import com.senlainc.repository.RelationRepository;
-import com.senlainc.repository.Repository;
+import com.senlainc.factory.ServiceFactory;
 import com.senlainc.service.FriendInviteService;
-import com.senlainc.service.FriendInviteServiceImpl;
-import com.senlainc.service.RelationService;
-import com.senlainc.service.RelationServiceImpl;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -29,10 +22,7 @@ public class FriendInviteController extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        Repository<FriendInvite> friendInviteRepository = new FriendInviteRepository();
-        Repository<Relation> relationRepository = new RelationRepository();
-        RelationService relationService = new RelationServiceImpl(relationRepository);
-        friendInviteService = new FriendInviteServiceImpl(friendInviteRepository, relationService);
+        friendInviteService = ServiceFactory.friendInviteService();
         objectMapper = new ObjectMapper();
     }
 
@@ -53,7 +43,7 @@ public class FriendInviteController extends HttpServlet {
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setStatus(400);
         String uri = req.getRequestURI();
-        Pattern pattern = Pattern.compile("/friend/invite/(\\d+)/accept", Pattern.CASE_INSENSITIVE);
+        Pattern pattern = Pattern.compile("^/friend/invite/(\\d+)/accept/?$", Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(uri);
         if (matcher.matches()) {
             String group = matcher.group(1);

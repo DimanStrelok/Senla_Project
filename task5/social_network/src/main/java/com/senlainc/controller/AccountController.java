@@ -2,11 +2,8 @@ package com.senlainc.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.senlainc.dto.AccountDto;
-import com.senlainc.entity.Account;
-import com.senlainc.repository.AccountRepository;
-import com.senlainc.repository.Repository;
+import com.senlainc.factory.ServiceFactory;
 import com.senlainc.service.AccountService;
-import com.senlainc.service.AccountServiceImpl;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -25,8 +22,7 @@ public class AccountController extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        Repository<Account> accountRepository = new AccountRepository();
-        accountService = new AccountServiceImpl(accountRepository);
+        accountService = ServiceFactory.accountService();
         objectMapper = new ObjectMapper();
     }
 
@@ -34,7 +30,7 @@ public class AccountController extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setStatus(400);
         String uri = req.getRequestURI();
-        Pattern pattern = Pattern.compile("/account/(\\d+)", Pattern.CASE_INSENSITIVE);
+        Pattern pattern = Pattern.compile("^/account/(\\d+)/?$", Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(uri);
         if (matcher.matches()) {
             String group = matcher.group(1);
@@ -45,7 +41,11 @@ public class AccountController extends HttpServlet {
                 resp.setContentType("application/json");
                 objectMapper.writeValue(resp.getOutputStream(), accountDto.get());
             }
-        } else {
+            return;
+        }
+        pattern = Pattern.compile("^/account/?$", Pattern.CASE_INSENSITIVE);
+        matcher = pattern.matcher(uri);
+        if (matcher.matches()) {
             resp.setStatus(200);
             resp.setContentType("application/json");
             objectMapper.writeValue(resp.getOutputStream(), accountService.findAll());
@@ -80,7 +80,7 @@ public class AccountController extends HttpServlet {
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setStatus(400);
         String uri = req.getRequestURI();
-        Pattern pattern = Pattern.compile("/account/(\\d+)", Pattern.CASE_INSENSITIVE);
+        Pattern pattern = Pattern.compile("^/account/(\\d+)/?$", Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(uri);
         if (matcher.matches()) {
             String group = matcher.group(1);

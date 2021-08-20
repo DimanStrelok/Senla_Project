@@ -3,6 +3,7 @@ package com.senlainc.service;
 import com.senlainc.dto.CreateFriendInviteDto;
 import com.senlainc.dto.FriendInviteDto;
 import com.senlainc.entity.FriendInvite;
+import com.senlainc.entity.FriendInviteStatus;
 import com.senlainc.mapper.FriendInviteMapper;
 import com.senlainc.repository.Repository;
 import org.mapstruct.factory.Mappers;
@@ -27,7 +28,7 @@ public class FriendInviteServiceImpl implements FriendInviteService {
         friendInvite.setFromAccountId(createFriendInviteDto.getFromAccountId());
         friendInvite.setToAccountId(createFriendInviteDto.getToAccountId());
         friendInvite.setCreatedAt(LocalDateTime.now());
-        friendInvite.setStatus((byte) 0);
+        friendInvite.setStatus(FriendInviteStatus.Created);
         return friendInviteMapper.friendInviteToDto(friendInviteRepository.create(friendInvite));
     }
 
@@ -39,7 +40,7 @@ public class FriendInviteServiceImpl implements FriendInviteService {
             long toAccountId = friendInvite.get().getToAccountId();
             friendRelationService.createRelation(fromAccountId, toAccountId);
             FriendInvite updatedFriendInvite = friendInvite.get();
-            updatedFriendInvite.setStatus((byte) 1);
+            updatedFriendInvite.setStatus(FriendInviteStatus.Accepted);
             friendInviteRepository.update(updatedFriendInvite);
         }
     }

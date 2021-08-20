@@ -19,8 +19,8 @@ public class AccountDto {
     private String middleName;
     @JsonProperty("email")
     private String email;
-    @JsonProperty("email_confirmed")
-    private boolean emailConfirmed;
+    @JsonProperty("is_email_confirmed")
+    private boolean isEmailConfirmed;
     @JsonProperty("password")
     private String password;
     @JsonProperty("city")

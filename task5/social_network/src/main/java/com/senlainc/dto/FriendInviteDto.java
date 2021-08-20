@@ -1,6 +1,7 @@
 package com.senlainc.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.senlainc.entity.FriendInviteStatus;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,5 +21,5 @@ public class FriendInviteDto {
     @JsonProperty("created_at")
     private LocalDateTime createdAt;
     @JsonProperty("status")
-    private byte status;
+    private FriendInviteStatus status;
 }

@@ -13,7 +13,7 @@ public class Account {
     private String lastName;
     private String middleName;
     private String email;
-    private boolean emailConfirmed;
+    private boolean isEmailConfirmed;
     private String password;
     private String city;
     private String phoneNumber;

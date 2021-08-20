@@ -7,126 +7,81 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.StringJoiner;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public abstract class AbstractRepository<T> implements Repository<T> {
     @Override
     public T create(T entity) {
-        Connection connection = createConnection();
-        ResultSet resultSet = null;
-        try {
-            StringBuilder sb = new StringBuilder();
-            sb.append("insert into ");
-            sb.append(getTableName());
-            sb.append("(");
-            getTableAttributes().forEach(s -> sb.append(s).append(", "));
-            sb.deleteCharAt(sb.length() - 1);
-            sb.deleteCharAt(sb.length() - 1);
-            sb.append(") ");
-            sb.append(" values (");
-            getTableAttributes().forEach(s -> sb.append("?").append(", "));
-            sb.deleteCharAt(sb.length() - 1);
-            sb.deleteCharAt(sb.length() - 1);
-            sb.append(") returning id;");
-            PreparedStatement ps = connection.prepareStatement(sb.toString());
-            setCreateQueryParams(entity, ps);
-            resultSet = ps.executeQuery();
-            resultSet.next();
-            long id = resultSet.getLong(1);
-            setEntityId(entity, id);
-            return entity;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        } finally {
+        String sql = "insert into " + getTableName() + "(" + combineTableAttributes(", ") +
+                ") values (" + combineTableAttributes(", ", s -> "?") + ") returning id;";
+        return executeQueryWithParams(sql, ps -> setCreateQueryParams(entity, ps), rs -> {
             try {
-                if (resultSet != null) {
-                    resultSet.close();
-                }
-                connection.close();
+                rs.next();
+                long id = rs.getLong(1);
+                setEntityId(entity, id);
+                return entity;
             } catch (Exception e) {
-                //
+                throw new RuntimeException(e);
             }
-        }
+        });
     }
 
     @Override
     public Optional<T> findById(long id) {
-        Connection connection = createConnection();
-        ResultSet resultSet = null;
-        try {
-            PreparedStatement ps = connection.prepareStatement("select * from " + getTableName() + " where id = ?;");
-            ps.setLong(1, id);
-            resultSet = ps.executeQuery();
-            if (!resultSet.next()) {
-                return Optional.empty();
-            }
-            return Optional.of(parseEntity(resultSet));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        } finally {
+        String sql = "select * from " + getTableName() + " where id = ?;";
+        return executeQueryWithParams(sql, ps -> {
             try {
-                if (resultSet != null) {
-                    resultSet.close();
-                }
-                connection.close();
+                ps.setLong(1, id);
             } catch (Exception e) {
-                //
+                throw new RuntimeException(e);
             }
-        }
+        }, rs -> {
+            try {
+                if (!rs.next()) {
+                    return Optional.empty();
+                }
+                return Optional.of(parseEntity(rs));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     public List<T> findAll() {
-        Connection connection = createConnection();
-        ResultSet resultSet = null;
-        try {
-            PreparedStatement ps = connection.prepareStatement("select * from " + getTableName() + ";");
-            resultSet = ps.executeQuery();
-            List<T> list = new ArrayList<>();
-            while (resultSet.next()) {
-                list.add(parseEntity(resultSet));
-            }
-            return list;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        } finally {
+        String sql = "select * from " + getTableName() + ";";
+        return executeQuery(sql, rs -> {
             try {
-                if (resultSet != null) {
-                    resultSet.close();
+                List<T> list = new ArrayList<>();
+                while (rs.next()) {
+                    list.add(parseEntity(rs));
                 }
-                connection.close();
+                return list;
             } catch (Exception e) {
-                //
+                throw new RuntimeException(e);
             }
-        }
+        });
     }
 
     @Override
     public void update(T entity) {
-        try (Connection connection = createConnection()) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("update ");
-            sb.append(getTableName());
-            sb.append(" set ");
-            getTableAttributes().forEach(s -> sb.append(s).append(" = ?, "));
-            sb.deleteCharAt(sb.length() - 1);
-            sb.deleteCharAt(sb.length() - 1);
-            sb.append(" where id = ?;");
-            PreparedStatement ps = connection.prepareStatement(sb.toString());
-            setUpdateQueryParams(entity, ps);
-            ps.execute();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        String sql = "update " + getTableName() +
+                " set " + combineTableAttributes(", ", s -> s + " = ?") +
+                " where id = ?;";
+        execute(sql, ps -> setUpdateQueryParams(entity, ps));
     }
 
     @Override
     public void deleteById(long id) {
-        try (Connection connection = createConnection()) {
-            PreparedStatement ps = connection.prepareStatement("delete from " + getTableName() + " where id = ?;");
-            ps.setLong(1, id);
-            ps.execute();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        String sql = "delete from " + getTableName() + " where id = ?;";
+        execute(sql, ps -> {
+            try {
+                ps.setLong(1, id);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     protected abstract String getTableName();
@@ -141,14 +96,46 @@ public abstract class AbstractRepository<T> implements Repository<T> {
 
     protected abstract void setEntityId(T entity, long id);
 
-    protected Connection createConnection() {
-        Connection connection;
+    protected Connection getConnection() {
         try {
             Class.forName("org.postgresql.Driver");
-            connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "postgres");
+            return DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "postgres");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        return connection;
+    }
+
+    protected void execute(String sql, Consumer<PreparedStatement> setup) {
+        try (Connection connection = getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
+            setup.accept(ps);
+            ps.execute();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected <R> R executeQuery(String sql, Function<ResultSet, R> acquireResult) {
+        return executeQueryWithParams(sql, ps -> {}, acquireResult);
+    }
+
+    protected <R> R executeQueryWithParams(String sql, Consumer<PreparedStatement> setup, Function<ResultSet, R> acquireResult) {
+        try (Connection connection = getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
+            setup.accept(ps);
+            try (ResultSet resultSet = ps.executeQuery()) {
+                return acquireResult.apply(resultSet);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected String combineTableAttributes(String delimiter) {
+        return combineTableAttributes(delimiter, s -> s);
+    }
+
+    protected String combineTableAttributes(String delimiter, Function<String, String> f) {
+        StringJoiner joiner = new StringJoiner(delimiter);
+        getTableAttributes().stream().map(f).forEach(joiner::add);
+        return joiner.toString();
     }
 }
