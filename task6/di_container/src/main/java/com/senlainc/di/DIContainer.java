@@ -33,15 +33,13 @@ public class DIContainer {
 
     private void registryComponents(String packageToScan) {
         Reflections reflections = new Reflections(packageToScan);
-        Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(Component.class);
-        annotated.forEach(this::registryByClass);
+        Set<Class<?>> componentClasses = reflections.getTypesAnnotatedWith(Component.class);
+        componentClasses.forEach(this::registryComponent);
     }
 
     private void createComponents() {
-        componentRegistry.forEach((clazz, componentInfo) -> {
-            if (!classToInstance.containsKey(clazz)) {
-                classToInstance.put(clazz, createInstance(clazz));
-            }
+        componentRegistry.forEach((componentClass, componentInfo) -> {
+            classToInstance.computeIfAbsent(componentClass, key -> createInstance(componentClass));
         });
     }
 
@@ -59,23 +57,23 @@ public class DIContainer {
         return (T) classToInstance.get(componentClass);
     }
 
-    private void registryByClass(Class<?> clazz) {
-        Constructor<?> constructor = findConstructor(clazz);
+    private void registryComponent(Class<?> componentClass) {
+        Constructor<?> constructor = findConstructor(componentClass);
         constructor.setAccessible(true);
         List<Class<?>> dependencies = Arrays.stream(constructor.getParameterTypes()).collect(Collectors.toList());
-        Method postConstruct = findPostConstruct(clazz);
-        Class<?>[] interfaces = clazz.getAnnotation(Component.class).interfaceClass();
-        List<Class<?>> interfacesList = Arrays.stream(interfaces).collect(Collectors.toList());
-        componentRegistry.put(clazz, new ComponentInfo(constructor, dependencies, postConstruct, interfacesList));
-        interfacesList.forEach(interfaceClass -> interfaceToComponent.put(interfaceClass, clazz));
+        Method postConstruct = findPostConstruct(componentClass);
+        Class<?>[] interfaces = componentClass.getAnnotation(Component.class).interfaceClass();
+        List<Class<?>> interfaceList = Arrays.stream(interfaces).collect(Collectors.toList());
+        componentRegistry.put(componentClass, new ComponentInfo(constructor, dependencies, postConstruct, interfaceList));
+        interfaceList.forEach(interfaceClass -> interfaceToComponent.put(interfaceClass, componentClass));
     }
 
-    private Constructor<?> findConstructor(Class<?> clazz) {
-        Optional<Constructor<?>> constructor = Arrays.stream(clazz.getDeclaredConstructors())
+    private Constructor<?> findConstructor(Class<?> componentClass) {
+        Optional<Constructor<?>> constructor = Arrays.stream(componentClass.getDeclaredConstructors())
                 .filter(c -> c.getParameterCount() == 0)
                 .findFirst();
         if (!constructor.isPresent()) {
-            constructor = Arrays.stream(clazz.getDeclaredConstructors())
+            constructor = Arrays.stream(componentClass.getDeclaredConstructors())
                     .filter(c -> c.isAnnotationPresent(InjectConstructor.class))
                     .findFirst();
         }
@@ -83,11 +81,11 @@ public class DIContainer {
             c.setAccessible(true);
             return c;
         });
-        return constructor.orElseThrow(() -> new ComponentNotFoundConstructorException(clazz));
+        return constructor.orElseThrow(() -> new ComponentNotFoundConstructorException(componentClass));
     }
 
-    private Method findPostConstruct(Class<?> clazz) {
-        return Arrays.stream(clazz.getDeclaredMethods())
+    private Method findPostConstruct(Class<?> componentClass) {
+        return Arrays.stream(componentClass.getDeclaredMethods())
                 .filter(m -> m.isAnnotationPresent(PostConstruct.class))
                 .findFirst()
                 .map(method -> {
@@ -97,22 +95,19 @@ public class DIContainer {
                 .orElse(null);
     }
 
-    @SuppressWarnings("unchecked")
-    private <T> T createInstance(Class<T> componentClass) {
+    private Object createInstance(Class<?> componentClass) {
         ComponentInfo componentInfo = componentRegistry.get(componentClass);
         Object[] dependencies = componentInfo.dependencies.stream()
                 .map(dependencyClass -> {
                     if (interfaceToComponent.containsKey(dependencyClass)) {
-                        dependencyClass = interfaceToComponent.get(dependencyClass);
+                        return interfaceToComponent.get(dependencyClass);
                     }
-                    if (!classToInstance.containsKey(dependencyClass)) {
-                        classToInstance.put(dependencyClass, createInstance(dependencyClass));
-                    }
-                    return classToInstance.get(dependencyClass);
+                    return dependencyClass;
                 })
+                .map(dependencyClass -> classToInstance.computeIfAbsent(dependencyClass, key -> createInstance(dependencyClass)))
                 .toArray();
         try {
-            T instance = (T) componentInfo.constructor.newInstance(dependencies);
+            Object instance = componentInfo.constructor.newInstance(dependencies);
             if (componentInfo.postConstruct != null) {
                 componentInfo.postConstruct.invoke(instance);
             }
