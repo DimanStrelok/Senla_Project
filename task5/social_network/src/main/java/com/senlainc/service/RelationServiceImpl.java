@@ -1,12 +1,16 @@
 package com.senlainc.service;
 
+import com.senlainc.di.Component;
+import com.senlainc.di.InjectConstructor;
 import com.senlainc.entity.Relation;
-import com.senlainc.repository.Repository;
+import com.senlainc.repository.RelationRepository;
 
+@Component(interfaceClass = RelationService.class)
 public class RelationServiceImpl implements RelationService {
-    private final Repository<Relation> relationRepository;
+    private final RelationRepository relationRepository;
 
-    public RelationServiceImpl(Repository<Relation> relationRepository) {
+    @InjectConstructor
+    public RelationServiceImpl(RelationRepository relationRepository) {
         this.relationRepository = relationRepository;
     }
 

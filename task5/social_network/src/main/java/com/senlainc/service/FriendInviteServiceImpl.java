@@ -1,22 +1,26 @@
 package com.senlainc.service;
 
+import com.senlainc.di.Component;
+import com.senlainc.di.InjectConstructor;
 import com.senlainc.dto.CreateFriendInviteDto;
 import com.senlainc.dto.FriendInviteDto;
 import com.senlainc.entity.FriendInvite;
 import com.senlainc.entity.FriendInviteStatus;
 import com.senlainc.mapper.FriendInviteMapper;
-import com.senlainc.repository.Repository;
+import com.senlainc.repository.FriendInviteRepository;
 import org.mapstruct.factory.Mappers;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+@Component(interfaceClass = FriendInviteService.class)
 public class FriendInviteServiceImpl implements FriendInviteService {
-    private final Repository<FriendInvite> friendInviteRepository;
+    private final FriendInviteRepository friendInviteRepository;
     private final RelationService friendRelationService;
     private final FriendInviteMapper friendInviteMapper;
 
-    public FriendInviteServiceImpl(Repository<FriendInvite> friendInviteRepository, RelationService relationService) {
+    @InjectConstructor
+    public FriendInviteServiceImpl(FriendInviteRepository friendInviteRepository, RelationService relationService) {
         this.friendInviteRepository = friendInviteRepository;
         this.friendRelationService = relationService;
         this.friendInviteMapper = Mappers.getMapper(FriendInviteMapper.class);

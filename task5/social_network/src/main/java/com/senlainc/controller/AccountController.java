@@ -1,8 +1,8 @@
 package com.senlainc.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.senlainc.di.DIContainer;
 import com.senlainc.dto.AccountDto;
-import com.senlainc.factory.ServiceFactory;
 import com.senlainc.service.AccountService;
 
 import javax.servlet.ServletException;
@@ -22,7 +22,7 @@ public class AccountController extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        accountService = ServiceFactory.accountService();
+        accountService = DIContainer.get(AccountService.class);
         objectMapper = new ObjectMapper();
     }
 

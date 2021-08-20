@@ -1,9 +1,9 @@
 package com.senlainc.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.senlainc.di.DIContainer;
 import com.senlainc.dto.CreateFriendInviteDto;
 import com.senlainc.dto.FriendInviteDto;
-import com.senlainc.factory.ServiceFactory;
 import com.senlainc.service.FriendInviteService;
 
 import javax.servlet.ServletException;
@@ -22,7 +22,7 @@ public class FriendInviteController extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        friendInviteService = ServiceFactory.friendInviteService();
+        friendInviteService = DIContainer.get(FriendInviteService.class);
         objectMapper = new ObjectMapper();
     }
 
