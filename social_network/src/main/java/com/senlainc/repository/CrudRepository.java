@@ -17,7 +17,7 @@ public interface CrudRepository<T> {
     default T get(long id) {
         Session session = getSessionFactory().getCurrentSession();
         return session.byId(getEntityClass()).loadOptional(id)
-                .orElseThrow(() -> new AppException("not found '" + getEntityClass() + "' with id = " + id));
+                .orElseThrow(() -> new AppException("not found '" + getEntityClass().getSimpleName() + "' with id = " + id));
     }
 
     default void update(T entity) {

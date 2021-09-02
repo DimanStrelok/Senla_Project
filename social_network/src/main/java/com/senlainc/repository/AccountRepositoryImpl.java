@@ -1,5 +1,6 @@
 package com.senlainc.repository;
 
+import com.senlainc.dto.FindAccountDto;
 import com.senlainc.entity.*;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Session;
@@ -7,7 +8,10 @@ import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.StringJoiner;
 
 @RequiredArgsConstructor
 @Repository
@@ -33,6 +37,35 @@ public class AccountRepositoryImpl implements AccountRepository {
     }
 
     @Override
+    public List<Account> findAccounts(FindAccountDto findAccountDto) {
+        Session session = sessionFactory.getCurrentSession();
+        StringBuilder sb = new StringBuilder("select e from Account e");
+        StringJoiner joiner = new StringJoiner(" and ");
+        Map<String, String> params = new HashMap<>();
+        if (findAccountDto.getFirstName() != null) {
+            params.put("firstName", findAccountDto.getFirstName());
+        }
+        if (findAccountDto.getLastName() != null) {
+            params.put("lastName", findAccountDto.getLastName());
+        }
+        if (findAccountDto.getMiddleName() != null) {
+            params.put("middleName", findAccountDto.getMiddleName());
+        }
+        if (findAccountDto.getCity() != null) {
+            params.put("city", findAccountDto.getCity());
+        }
+        params.forEach((k, v) -> joiner.add("e." + k + " like :" + k));
+        if (!params.isEmpty()) {
+            sb.append(" where ");
+        }
+        sb.append(joiner);
+        String queryString = sb.toString();
+        Query<Account> query = session.createQuery(queryString, Account.class);
+        params.forEach((k, v) -> query.setParameter(k, "%" + v + "%"));
+        return query.list();
+    }
+
+    @Override
     public List<Post> getPosts(Account account) {
         Session session = sessionFactory.getCurrentSession();
         String queryString = "select e from Post e where e.account=:account";
@@ -54,8 +87,8 @@ public class AccountRepositoryImpl implements AccountRepository {
     public List<Account> getFriends(Account account) {
         Session session = sessionFactory.getCurrentSession();
         String queryString = "select e from Account e " +
-                "join Relation r on e=r.to_account " +
-                "where r.from_account=:account";
+                "join Relation r on e=r.toAccount " +
+                "where r.fromAccount=:account";
         Query<Account> query = session.createQuery(queryString, Account.class);
         query.setParameter("account", account);
         return query.list();
@@ -64,7 +97,7 @@ public class AccountRepositoryImpl implements AccountRepository {
     @Override
     public List<FriendInvite> getFriendInvites(Account account) {
         Session session = sessionFactory.getCurrentSession();
-        String queryString = "select e from FriendInvite e where e.to_account=:account";
+        String queryString = "select e from FriendInvite e where e.toAccount=:account";
         Query<FriendInvite> query = session.createQuery(queryString, FriendInvite.class);
         query.setParameter("account", account);
         return query.list();

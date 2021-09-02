@@ -64,6 +64,12 @@ public class AccountServiceImpl implements AccountService {
 
     @Transactional(readOnly = true)
     @Override
+    public List<AccountDto> findAccounts(FindAccountDto findAccountDto) {
+        return mapper.entityListToDtoList(repository.findAccounts(findAccountDto));
+    }
+
+    @Transactional(readOnly = true)
+    @Override
     public List<PostDto> getPosts(long id) {
         Account account = repository.get(id);
         return postMapper.entityListToDtoList(repository.getPosts(account));

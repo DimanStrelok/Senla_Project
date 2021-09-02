@@ -47,6 +47,12 @@ public class AccountController {
         return service.getAccounts();
     }
 
+    @GetMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<AccountDto> findAccounts(@RequestBody FindAccountDto findAccountDto) {
+        log.info("Request: 'findAccounts', params: {}", findAccountDto);
+        return service.findAccounts(findAccountDto);
+    }
+
     @GetMapping(value = "/{id}/post", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<PostDto> getPosts(@PathVariable long id) {
         log.info("Request: 'getPosts', params: {}", id);

@@ -15,6 +15,8 @@ public interface AccountService {
 
     List<AccountDto> getAccounts();
 
+    List<AccountDto> findAccounts(FindAccountDto findAccountDto);
+
     List<PostDto> getPosts(long id);
 
     List<DialogDto> getDialogs(long id);
