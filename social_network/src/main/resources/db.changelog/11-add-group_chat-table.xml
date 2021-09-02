@@ -1,0 +1,42 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd">
+
+    <changeSet author="user" id="43">
+        <createTable tableName="group_chat">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true" primaryKeyName="group_chat-pkey"/>
+            </column>
+            <column name="group_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="account_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="user" id="44">
+        <addForeignKeyConstraint baseColumnNames="group_id" baseTableName="group_chat" constraintName="group_chat-group_id-fkey" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="CASCADE" referencedColumnNames="id" referencedTableName="s_group" validate="true"/>
+    </changeSet>
+    <changeSet author="user" id="45">
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="group_chat" constraintName="group_chat-account_id-fkey" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="CASCADE" referencedColumnNames="id" referencedTableName="account" validate="true"/>
+    </changeSet>
+    <changeSet author="user" id="46">
+        <createIndex indexName="group_chat-group_id-idx" tableName="group_chat">
+            <column name="group_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="user" id="47">
+        <createIndex indexName="group_chat-account_id-idx" tableName="group_chat">
+            <column name="account_id"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>
