@@ -5,6 +5,8 @@ import com.senlainc.entity.Account;
 import com.senlainc.mapper.*;
 import com.senlainc.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,11 +22,13 @@ public class AccountServiceImpl implements AccountService {
     private final FriendInviteMapper friendInviteMapper;
     private final GroupMapper groupMapper;
     private final GroupInviteMapper groupInviteMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     @Override
     public AccountDto create(CreateAccountDto createAccountDto) {
         Account entity = mapper.entityFromDto(createAccountDto);
+        entity.setPassword(passwordEncoder.encode(entity.getPassword()));
         repository.create(entity);
         return mapper.entityToDto(entity);
     }
@@ -35,6 +39,7 @@ public class AccountServiceImpl implements AccountService {
         return mapper.entityToDto(repository.get(id));
     }
 
+    @PreAuthorize("#accountDto.id == authentication.principal.id")
     @Transactional
     @Override
     public AccountDto update(AccountDto accountDto) {
@@ -44,12 +49,13 @@ public class AccountServiceImpl implements AccountService {
         entity.setMiddleName(accountDto.getMiddleName());
         entity.setEmail(accountDto.getEmail());
         entity.setPhoneNumber(accountDto.getPhoneNumber());
-        entity.setPassword(accountDto.getPassword());
+        entity.setPassword(passwordEncoder.encode(accountDto.getPassword()));
         entity.setCity(accountDto.getCity());
         repository.update(entity);
         return mapper.entityToDto(entity);
     }
 
+    @PreAuthorize("#id == authentication.principal.id")
     @Transactional
     @Override
     public void delete(long id) {
@@ -75,6 +81,7 @@ public class AccountServiceImpl implements AccountService {
         return postMapper.entityListToDtoList(repository.getPosts(account));
     }
 
+    @PreAuthorize("#id == authentication.principal.id")
     @Transactional(readOnly = true)
     @Override
     public List<DialogDto> getDialogs(long id) {
@@ -89,6 +96,7 @@ public class AccountServiceImpl implements AccountService {
         return mapper.entityListToDtoList(repository.getFriends(account));
     }
 
+    @PreAuthorize("#id == authentication.principal.id")
     @Transactional(readOnly = true)
     @Override
     public List<FriendInviteDto> getFriendInvites(long id) {
@@ -103,6 +111,7 @@ public class AccountServiceImpl implements AccountService {
         return groupMapper.entityListToDtoList(repository.getGroups(account));
     }
 
+    @PreAuthorize("#id == authentication.principal.id")
     @Transactional(readOnly = true)
     @Override
     public List<GroupInviteDto> getGroupInvites(long id) {

@@ -9,4 +9,6 @@ public interface GroupAccountService {
     void createMember(Group group, Account account);
 
     boolean isGroupMember(Group group, Account account);
+
+    Account getGroupCreator(Group group);
 }

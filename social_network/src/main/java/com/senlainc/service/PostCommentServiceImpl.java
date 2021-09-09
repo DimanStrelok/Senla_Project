@@ -9,7 +9,9 @@ import com.senlainc.mapper.PostCommentMapper;
 import com.senlainc.repository.AccountRepository;
 import com.senlainc.repository.PostCommentRepository;
 import com.senlainc.repository.PostRepository;
+import com.senlainc.security.AuthenticationAccess;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,7 +19,7 @@ import java.time.LocalDateTime;
 
 @RequiredArgsConstructor
 @Service
-public class PostCommentServiceImpl implements PostCommentService {
+public class PostCommentServiceImpl implements PostCommentService, AuthenticationAccess {
     private final PostCommentRepository repository;
     private final PostCommentMapper mapper;
     private final PostRepository postRepository;
@@ -26,8 +28,12 @@ public class PostCommentServiceImpl implements PostCommentService {
     @Transactional
     @Override
     public PostCommentDto create(CreatePostCommentDto createPostCommentDto) {
+        Account authenticatedAccount = getAuthenticatedAccount();
         Post post = postRepository.get(createPostCommentDto.getPostId());
         Account account = accountRepository.get(createPostCommentDto.getAccountId());
+        if (authenticatedAccount.getId() != account.getId()) {
+            throw new AccessDeniedException("access to create post comment from account " + account + " via account " + authenticatedAccount + " denied");
+        }
         LocalDateTime now = LocalDateTime.now();
         PostComment entity = new PostComment();
         entity.setPost(post);
@@ -48,7 +54,11 @@ public class PostCommentServiceImpl implements PostCommentService {
     @Transactional
     @Override
     public PostCommentDto changeText(long id, String text) {
+        Account authenticatedAccount = getAuthenticatedAccount();
         PostComment entity = repository.get(id);
+        if (authenticatedAccount.getId() != entity.getAccount().getId()) {
+            throw new AccessDeniedException("access to update post comment " + entity + " via account " + authenticatedAccount + " denied");
+        }
         entity.setText(text);
         entity.setUpdatedAt(LocalDateTime.now());
         repository.update(entity);
@@ -58,6 +68,11 @@ public class PostCommentServiceImpl implements PostCommentService {
     @Transactional
     @Override
     public void delete(long id) {
-        repository.delete(repository.get(id));
+        Account authenticatedAccount = getAuthenticatedAccount();
+        PostComment entity = repository.get(id);
+        if (authenticatedAccount.getId() != entity.getAccount().getId()) {
+            throw new AccessDeniedException("access to delete post comment " + entity + " via account " + authenticatedAccount + " denied");
+        }
+        repository.delete(entity);
     }
 }

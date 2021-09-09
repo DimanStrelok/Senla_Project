@@ -10,8 +10,6 @@ import java.util.List;
 public interface DialogService {
     DialogDto get(long id);
 
-    void delete(long id);
-
     Dialog getOrCreate(Account fromAccount, Account toAccount);
 
     List<DialogMessageDto> getMessages(long id);

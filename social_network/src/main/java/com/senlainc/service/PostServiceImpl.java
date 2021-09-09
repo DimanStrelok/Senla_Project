@@ -9,7 +9,9 @@ import com.senlainc.mapper.PostCommentMapper;
 import com.senlainc.mapper.PostMapper;
 import com.senlainc.repository.AccountRepository;
 import com.senlainc.repository.PostRepository;
+import com.senlainc.security.AuthenticationAccess;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,7 +20,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Service
-public class PostServiceImpl implements PostService {
+public class PostServiceImpl implements PostService, AuthenticationAccess {
     private final PostRepository repository;
     private final PostMapper mapper;
     private final PostCommentMapper commentMapper;
@@ -27,7 +29,11 @@ public class PostServiceImpl implements PostService {
     @Transactional
     @Override
     public PostDto create(CreatePostDto createPostDto) {
+        Account authenticatedAccount = getAuthenticatedAccount();
         Account account = accountRepository.get(createPostDto.getAccountId());
+        if (authenticatedAccount.getId() != account.getId()) {
+            throw new AccessDeniedException("access to create post from account " + account + " via account " + authenticatedAccount + " denied");
+        }
         LocalDateTime now = LocalDateTime.now();
         Post entity = new Post();
         entity.setAccount(account);
@@ -47,7 +53,11 @@ public class PostServiceImpl implements PostService {
     @Transactional
     @Override
     public PostDto changeText(long id, String text) {
+        Account authenticatedAccount = getAuthenticatedAccount();
         Post entity = repository.get(id);
+        if (authenticatedAccount.getId() != entity.getAccount().getId()) {
+            throw new AccessDeniedException("access to update post " + entity + " via account " + authenticatedAccount + " denied");
+        }
         entity.setText(text);
         entity.setUpdatedAt(LocalDateTime.now());
         repository.update(entity);
@@ -57,7 +67,12 @@ public class PostServiceImpl implements PostService {
     @Transactional
     @Override
     public void delete(long id) {
-        repository.delete(repository.get(id));
+        Account authenticatedAccount = getAuthenticatedAccount();
+        Post entity = repository.get(id);
+        if (authenticatedAccount.getId() != entity.getAccount().getId()) {
+            throw new AccessDeniedException("access to delete post " + entity + " via account " + authenticatedAccount + " denied");
+        }
+        repository.delete(entity);
     }
 
     @Transactional(readOnly = true)

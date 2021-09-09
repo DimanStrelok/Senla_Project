@@ -6,4 +6,6 @@ import com.senlainc.entity.GroupAccount;
 
 public interface GroupAccountRepository extends CrudRepository<GroupAccount> {
     boolean isMember(Group group, Account account);
+
+    Account getGroupCreator(Group group);
 }

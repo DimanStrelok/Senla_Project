@@ -3,6 +3,7 @@ package com.senlainc.repository;
 import com.senlainc.entity.Account;
 import com.senlainc.entity.Group;
 import com.senlainc.entity.GroupAccount;
+import com.senlainc.entity.GroupRole;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -32,5 +33,15 @@ public class GroupAccountRepositoryImpl implements GroupAccountRepository {
         query.setParameter("group", group);
         query.setParameter("account", account);
         return query.uniqueResultOptional().isPresent();
+    }
+
+    @Override
+    public Account getGroupCreator(Group group) {
+        Session session = sessionFactory.getCurrentSession();
+        String queryString = "select e from Account e join GroupAccount ga on e=ga.account where ga.role=:role and ga.group=:group";
+        Query<Account> query = session.createQuery(queryString, Account.class);
+        query.setParameter("role", GroupRole.Creator);
+        query.setParameter("group", group);
+        return query.getSingleResult();
     }
 }

@@ -9,7 +9,9 @@ import com.senlainc.exception.AppException;
 import com.senlainc.mapper.FriendInviteMapper;
 import com.senlainc.repository.AccountRepository;
 import com.senlainc.repository.FriendInviteRepository;
+import com.senlainc.security.AuthenticationAccess;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,7 +19,7 @@ import java.time.LocalDateTime;
 
 @RequiredArgsConstructor
 @Service
-public class FriendInviteServiceImpl implements FriendInviteService {
+public class FriendInviteServiceImpl implements FriendInviteService, AuthenticationAccess {
     private final FriendInviteRepository repository;
     private final FriendInviteMapper mapper;
     private final AccountRepository accountRepository;
@@ -26,10 +28,14 @@ public class FriendInviteServiceImpl implements FriendInviteService {
     @Transactional
     @Override
     public FriendInviteDto create(CreateFriendInviteDto createFriendInviteDto) {
+        Account authenticatedAccount = getAuthenticatedAccount();
         long fromAccountId = createFriendInviteDto.getFromAccountId();
         long toAccountId = createFriendInviteDto.getToAccountId();
         Account fromAccount = accountRepository.get(fromAccountId);
         Account toAccount = accountRepository.get(toAccountId);
+        if (authenticatedAccount.getId() != fromAccount.getId()) {
+            throw new AccessDeniedException("access to create friend invite from account " + fromAccount + " via account " + authenticatedAccount + " denied");
+        }
         if (relationService.isRelationExist(fromAccount, toAccount)) {
             throw new AppException("Account with id = " + fromAccountId + " and account with id = " + toAccountId + " already have relation");
         }
@@ -45,7 +51,11 @@ public class FriendInviteServiceImpl implements FriendInviteService {
     @Transactional
     @Override
     public void acceptInvite(long id) {
+        Account authenticatedAccount = getAuthenticatedAccount();
         FriendInvite entity = repository.get(id);
+        if (authenticatedAccount.getId() != entity.getToAccount().getId()) {
+            throw new AccessDeniedException("access to accept friend invite " + entity + " via account " + authenticatedAccount + " denied");
+        }
         if (entity.getStatus() == InviteStatus.Created) {
             relationService.createRelation(entity.getFromAccount(), entity.getToAccount());
             entity.setStatus(InviteStatus.Accepted);
@@ -58,7 +68,11 @@ public class FriendInviteServiceImpl implements FriendInviteService {
     @Transactional
     @Override
     public void rejectInvite(long id) {
+        Account authenticatedAccount = getAuthenticatedAccount();
         FriendInvite entity = repository.get(id);
+        if (authenticatedAccount.getId() != entity.getToAccount().getId()) {
+            throw new AccessDeniedException("access to reject friend invite " + entity + " via account " + authenticatedAccount + " denied");
+        }
         if (entity.getStatus() == InviteStatus.Created) {
             entity.setStatus(InviteStatus.Rejected);
             repository.update(entity);

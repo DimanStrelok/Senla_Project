@@ -8,10 +8,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.StringJoiner;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Repository
@@ -26,6 +23,15 @@ public class AccountRepositoryImpl implements AccountRepository {
     @Override
     public Class<Account> getEntityClass() {
         return Account.class;
+    }
+
+    @Override
+    public Optional<Account> getByEmail(String email) {
+        Session session = sessionFactory.openSession();
+        String queryString = "select e from Account e where e.email = :email";
+        Query<Account> query = session.createQuery(queryString, Account.class);
+        query.setParameter("email", email);
+        return query.uniqueResultOptional();
     }
 
     @Override

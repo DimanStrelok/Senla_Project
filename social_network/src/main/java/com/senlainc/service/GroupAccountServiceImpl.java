@@ -39,4 +39,9 @@ public class GroupAccountServiceImpl implements GroupAccountService {
     public boolean isGroupMember(Group group, Account account) {
         return repository.isMember(group, account);
     }
+
+    @Override
+    public Account getGroupCreator(Group group) {
+        return repository.getGroupCreator(group);
+    }
 }
