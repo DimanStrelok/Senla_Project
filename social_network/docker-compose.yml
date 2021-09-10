@@ -7,7 +7,9 @@ services:
       - "8080:8080"
     depends_on:
       - "postgres"
-    command: ./mvnw jetty:run
+    environment:
+      - DB_URL=postgres
+    command: ./mvnw -Dmaven.repo.local=./.m2 jetty:run
 
   postgres:
     image: postgres:13.4

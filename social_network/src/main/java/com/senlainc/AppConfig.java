@@ -18,6 +18,8 @@ import java.util.Properties;
 @ComponentScan
 @Configuration
 public class AppConfig {
+    private final String DB_URL = System.getenv().getOrDefault("DB_URL", "localhost");
+
     @Bean
     public LocalSessionFactoryBean sessionFactory() {
         LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
@@ -31,7 +33,8 @@ public class AppConfig {
     public DataSource dataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName("org.postgresql.Driver");
-        dataSource.setUrl("jdbc:postgresql://postgres:5432/postgres");
+        System.out.println(DB_URL);
+        dataSource.setUrl("jdbc:postgresql://" + DB_URL + ":5432/postgres");
         dataSource.setUsername("postgres");
         dataSource.setPassword("postgres");
         return dataSource;
