@@ -33,7 +33,6 @@ public class AppConfig {
     public DataSource dataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName("org.postgresql.Driver");
-        System.out.println(DB_URL);
         dataSource.setUrl("jdbc:postgresql://" + DB_URL + ":5432/postgres");
         dataSource.setUsername("postgres");
         dataSource.setPassword("postgres");
