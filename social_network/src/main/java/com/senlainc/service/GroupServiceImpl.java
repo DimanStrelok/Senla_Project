@@ -1,10 +1,12 @@
 package com.senlainc.service;
 
+import com.senlainc.dto.AccountDto;
 import com.senlainc.dto.CreateGroupDto;
 import com.senlainc.dto.GroupChatDto;
 import com.senlainc.dto.GroupDto;
 import com.senlainc.entity.Account;
 import com.senlainc.entity.Group;
+import com.senlainc.mapper.AccountMapper;
 import com.senlainc.mapper.GroupChatMapper;
 import com.senlainc.mapper.GroupMapper;
 import com.senlainc.repository.AccountRepository;
@@ -25,6 +27,7 @@ public class GroupServiceImpl implements GroupService, AuthenticationAccess {
     private final GroupChatMapper chatMapper;
     private final AccountRepository accountRepository;
     private final GroupAccountService groupAccountService;
+    private final AccountMapper accountMapper;
 
     @Transactional
     @Override
@@ -88,5 +91,12 @@ public class GroupServiceImpl implements GroupService, AuthenticationAccess {
             throw new AccessDeniedException("access to read group chats from " + entity + " via account " + authenticatedAccount + " denied");
         }
         return chatMapper.entityListToDtoList(repository.getChats(entity));
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<AccountDto> getMembers(long id) {
+        Group group = repository.get(id);
+        return accountMapper.entityListToDtoList(repository.getMembers(group));
     }
 }

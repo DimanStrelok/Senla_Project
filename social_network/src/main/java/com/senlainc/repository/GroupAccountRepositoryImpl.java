@@ -4,6 +4,7 @@ import com.senlainc.entity.Account;
 import com.senlainc.entity.Group;
 import com.senlainc.entity.GroupAccount;
 import com.senlainc.entity.GroupRole;
+import com.senlainc.exception.AppException;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -42,6 +43,6 @@ public class GroupAccountRepositoryImpl implements GroupAccountRepository {
         Query<Account> query = session.createQuery(queryString, Account.class);
         query.setParameter("role", GroupRole.Creator);
         query.setParameter("group", group);
-        return query.getSingleResult();
+        return query.uniqueResultOptional().orElseThrow(() -> new AppException("group must be have member with role Creator"));
     }
 }

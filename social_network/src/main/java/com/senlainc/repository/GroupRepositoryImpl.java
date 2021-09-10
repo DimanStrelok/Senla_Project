@@ -1,5 +1,6 @@
 package com.senlainc.repository;
 
+import com.senlainc.entity.Account;
 import com.senlainc.entity.Group;
 import com.senlainc.entity.GroupChat;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +39,15 @@ public class GroupRepositoryImpl implements GroupRepository {
         Session session = sessionFactory.getCurrentSession();
         String queryString = "select gc from GroupChat gc where gc.group=:group";
         Query<GroupChat> query = session.createQuery(queryString, GroupChat.class);
+        query.setParameter("group", group);
+        return query.list();
+    }
+
+    @Override
+    public List<Account> getMembers(Group group) {
+        Session session = sessionFactory.getCurrentSession();
+        String queryString = "select e from Account e join GroupAccount ga on e=ga.account where ga.group=:group";
+        Query<Account> query = session.createQuery(queryString, Account.class);
         query.setParameter("group", group);
         return query.list();
     }

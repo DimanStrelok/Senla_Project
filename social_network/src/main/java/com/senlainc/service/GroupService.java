@@ -1,5 +1,6 @@
 package com.senlainc.service;
 
+import com.senlainc.dto.AccountDto;
 import com.senlainc.dto.CreateGroupDto;
 import com.senlainc.dto.GroupChatDto;
 import com.senlainc.dto.GroupDto;
@@ -18,4 +19,6 @@ public interface GroupService {
     List<GroupDto> getGroups();
 
     List<GroupChatDto> getChats(long id);
+
+    List<AccountDto> getMembers(long id);
 }

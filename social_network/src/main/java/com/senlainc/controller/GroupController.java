@@ -1,5 +1,6 @@
 package com.senlainc.controller;
 
+import com.senlainc.dto.AccountDto;
 import com.senlainc.dto.CreateGroupDto;
 import com.senlainc.dto.GroupChatDto;
 import com.senlainc.dto.GroupDto;
@@ -53,5 +54,11 @@ public class GroupController {
     public List<GroupChatDto> getChats(@PathVariable long id) {
         log.info("Request: 'getChats', params: {}", id);
         return service.getChats(id);
+    }
+
+    @GetMapping(value = "/{id}/account", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<AccountDto> getMembers(@PathVariable long id) {
+        log.info("Request: 'getMembers', params: {}", id);
+        return service.getMembers(id);
     }
 }
