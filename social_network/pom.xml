@@ -131,6 +131,19 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
+    <profiles>
+        <profile>
+            <id>DB_URL localhost</id>
+            <activation>
+                <property>
+                    <name>!env.DB_URL</name>
+                </property>
+            </activation>
+            <properties>
+                <env.DB_URL>localhost</env.DB_URL>
+            </properties>
+        </profile>
+    </profiles>
     <build>
         <pluginManagement>
             <plugins>
@@ -139,6 +152,8 @@
                     <artifactId>liquibase-maven-plugin</artifactId>
                     <version>3.8.0</version>
                     <configuration>
+                        <promptOnNonLocalDatabase>false</promptOnNonLocalDatabase>
+                        <url>jdbc:postgresql://${env.DB_URL}:5432/postgres</url>
                         <propertyFile>src/main/resources/liquibase.properties</propertyFile>
                         <changeLogFile>src/main/resources/db.changelog.xml</changeLogFile>
                     </configuration>

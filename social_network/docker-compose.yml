@@ -9,7 +9,7 @@ services:
       - "postgres"
     environment:
       - DB_URL=postgres
-    command: ./mvnw -Dmaven.repo.local=./.m2 jetty:run
+    command: ./mvnw -Dmaven.repo.local=./.m2 liquibase:update jetty:run
 
   postgres:
     image: postgres:13.4
