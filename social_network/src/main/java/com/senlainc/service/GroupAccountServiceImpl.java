@@ -40,6 +40,7 @@ public class GroupAccountServiceImpl implements GroupAccountService {
         return repository.isMember(group, account);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Account getGroupCreator(Group group) {
         return repository.getGroupCreator(group);
