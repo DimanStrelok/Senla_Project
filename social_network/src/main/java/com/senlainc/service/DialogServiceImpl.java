@@ -17,15 +17,16 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Service
-public class DialogServiceImpl implements DialogService, AuthenticationAccess {
+public class DialogServiceImpl implements DialogService {
     private final DialogRepository repository;
     private final DialogMapper mapper;
     private final DialogMessageMapper messageMapper;
+    private final AuthenticationAccess authenticationAccess;
 
     @Transactional(readOnly = true)
     @Override
     public DialogDto get(long id) {
-        Account authenticatedAccount = getAuthenticatedAccount();
+        Account authenticatedAccount = authenticationAccess.getAuthenticatedAccount();
         Dialog entity = repository.get(id);
         if (authenticatedAccount.getId() != entity.getAccount1().getId() && authenticatedAccount.getId() != entity.getAccount2().getId()) {
             throw new AccessDeniedException("access to read dialog " + entity + " via account " + authenticatedAccount + " denied");
@@ -48,7 +49,7 @@ public class DialogServiceImpl implements DialogService, AuthenticationAccess {
     @Transactional(readOnly = true)
     @Override
     public List<DialogMessageDto> getMessages(long id) {
-        Account authenticatedAccount = getAuthenticatedAccount();
+        Account authenticatedAccount = authenticationAccess.getAuthenticatedAccount();
         Dialog entity = repository.get(id);
         if (authenticatedAccount.getId() != entity.getAccount1().getId() && authenticatedAccount.getId() != entity.getAccount2().getId()) {
             throw new AccessDeniedException("access to read dialog messages from dialog " + entity + " via account " + authenticatedAccount + " denied");

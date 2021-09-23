@@ -18,16 +18,17 @@ import java.time.LocalDateTime;
 
 @RequiredArgsConstructor
 @Service
-public class DialogMessageServiceImpl implements DialogMessageService, AuthenticationAccess {
+public class DialogMessageServiceImpl implements DialogMessageService {
     private final DialogMessageRepository repository;
     private final DialogMessageMapper mapper;
     private final AccountRepository accountRepository;
     private final DialogService dialogService;
+    private final AuthenticationAccess authenticationAccess;
 
     @Transactional
     @Override
     public DialogMessageDto create(CreateDialogMessageDto createDialogMessageDto) {
-        Account authenticatedAccount = getAuthenticatedAccount();
+        Account authenticatedAccount = authenticationAccess.getAuthenticatedAccount();
         Account fromAccount = accountRepository.get(createDialogMessageDto.getFromAccountId());
         Account toAccount = accountRepository.get(createDialogMessageDto.getToAccountId());
         if (authenticatedAccount.getId() != fromAccount.getId()) {
@@ -48,7 +49,7 @@ public class DialogMessageServiceImpl implements DialogMessageService, Authentic
     @Transactional(readOnly = true)
     @Override
     public DialogMessageDto get(long id) {
-        Account authenticatedAccount = getAuthenticatedAccount();
+        Account authenticatedAccount = authenticationAccess.getAuthenticatedAccount();
         DialogMessage entity = repository.get(id);
         if (authenticatedAccount.getId() != entity.getDialog().getAccount1().getId() && authenticatedAccount.getId() != entity.getDialog().getAccount2().getId()) {
             throw new AccessDeniedException("access to read dialog message " + entity + " via account " + authenticatedAccount + " denied");
@@ -59,7 +60,7 @@ public class DialogMessageServiceImpl implements DialogMessageService, Authentic
     @Transactional
     @Override
     public DialogMessageDto changeText(long id, String text) {
-        Account authenticatedAccount = getAuthenticatedAccount();
+        Account authenticatedAccount = authenticationAccess.getAuthenticatedAccount();
         DialogMessage entity = repository.get(id);
         if (authenticatedAccount.getId() != entity.getAccount().getId()) {
             throw new AccessDeniedException("access to update dialog message " + entity + " via account " + authenticatedAccount + " denied");
@@ -73,7 +74,7 @@ public class DialogMessageServiceImpl implements DialogMessageService, Authentic
     @Transactional
     @Override
     public void delete(long id) {
-        Account authenticatedAccount = getAuthenticatedAccount();
+        Account authenticatedAccount = authenticationAccess.getAuthenticatedAccount();
         DialogMessage entity = repository.get(id);
         if (authenticatedAccount.getId() != entity.getAccount().getId()) {
             throw new AccessDeniedException("access to delete dialog message " + entity + " via account " + authenticatedAccount + " denied");

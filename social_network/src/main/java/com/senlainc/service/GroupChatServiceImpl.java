@@ -22,18 +22,19 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Service
-public class GroupChatServiceImpl implements GroupChatService, AuthenticationAccess {
+public class GroupChatServiceImpl implements GroupChatService {
     private final GroupChatRepository repository;
     private final GroupChatMapper mapper;
     private final GroupChatMessageMapper messageMapper;
     private final GroupRepository groupRepository;
     private final AccountRepository accountRepository;
     private final GroupAccountService groupAccountService;
+    private final AuthenticationAccess authenticationAccess;
 
     @Transactional
     @Override
     public GroupChatDto create(CreateGroupChatDto createGroupChatDto) {
-        Account authenticatedAccount = getAuthenticatedAccount();
+        Account authenticatedAccount = authenticationAccess.getAuthenticatedAccount();
         GroupChat entity = new GroupChat();
         Group group = groupRepository.get(createGroupChatDto.getGroupId());
         Account account = accountRepository.get(createGroupChatDto.getAccountId());
@@ -51,7 +52,7 @@ public class GroupChatServiceImpl implements GroupChatService, AuthenticationAcc
     @Transactional(readOnly = true)
     @Override
     public GroupChatDto get(long id) {
-        Account authenticatedAccount = getAuthenticatedAccount();
+        Account authenticatedAccount = authenticationAccess.getAuthenticatedAccount();
         GroupChat entity = repository.get(id);
         if (!groupAccountService.isGroupMember(entity.getGroup(), authenticatedAccount)) {
             throw new AccessDeniedException("access to read group chat via account " + authenticatedAccount + " denied");
@@ -62,7 +63,7 @@ public class GroupChatServiceImpl implements GroupChatService, AuthenticationAcc
     @Transactional
     @Override
     public GroupChatDto changeTitle(long id, String text) {
-        Account authenticatedAccount = getAuthenticatedAccount();
+        Account authenticatedAccount = authenticationAccess.getAuthenticatedAccount();
         GroupChat entity = repository.get(id);
         if (authenticatedAccount.getId() != entity.getAccount().getId() || !groupAccountService.isGroupMember(entity.getGroup(), entity.getAccount())) {
             throw new AccessDeniedException("access to change title group chat " + entity + " via account " + authenticatedAccount + " denied");
@@ -75,7 +76,7 @@ public class GroupChatServiceImpl implements GroupChatService, AuthenticationAcc
     @Transactional
     @Override
     public void delete(long id) {
-        Account authenticatedAccount = getAuthenticatedAccount();
+        Account authenticatedAccount = authenticationAccess.getAuthenticatedAccount();
         GroupChat entity = repository.get(id);
         if (authenticatedAccount.getId() != entity.getAccount().getId() || !groupAccountService.isGroupMember(entity.getGroup(), entity.getAccount())) {
             throw new AccessDeniedException("access to delete group chat " + entity + " via account " + authenticatedAccount + " denied");
@@ -86,7 +87,7 @@ public class GroupChatServiceImpl implements GroupChatService, AuthenticationAcc
     @Transactional(readOnly = true)
     @Override
     public List<GroupChatMessageDto> getMessages(long id) {
-        Account authenticatedAccount = getAuthenticatedAccount();
+        Account authenticatedAccount = authenticationAccess.getAuthenticatedAccount();
         GroupChat groupChat = repository.get(id);
         if (!groupAccountService.isGroupMember(groupChat.getGroup(), authenticatedAccount)) {
             throw new AccessDeniedException("access to read group chat messages from " + groupChat + " via account " + authenticatedAccount + " denied");

@@ -21,17 +21,18 @@ import java.time.LocalDateTime;
 
 @RequiredArgsConstructor
 @Service
-public class GroupInviteServiceImpl implements GroupInviteService, AuthenticationAccess {
+public class GroupInviteServiceImpl implements GroupInviteService {
     private final GroupInviteRepository repository;
     private final GroupInviteMapper mapper;
     private final GroupRepository groupRepository;
     private final AccountRepository accountRepository;
     private final GroupAccountService groupAccountService;
+    private final AuthenticationAccess authenticationAccess;
 
     @Transactional
     @Override
     public GroupInviteDto create(CreateGroupInviteDto createGroupInviteDto) {
-        Account authenticatedAccount = getAuthenticatedAccount();
+        Account authenticatedAccount = authenticationAccess.getAuthenticatedAccount();
         long groupId = createGroupInviteDto.getGroupId();
         long accountId = createGroupInviteDto.getAccountId();
         Group group = groupRepository.get(groupId);
@@ -54,7 +55,7 @@ public class GroupInviteServiceImpl implements GroupInviteService, Authenticatio
     @Transactional
     @Override
     public void acceptInvite(long id) {
-        Account authenticatedAccount = getAuthenticatedAccount();
+        Account authenticatedAccount = authenticationAccess.getAuthenticatedAccount();
         GroupInvite entity = repository.get(id);
         if (authenticatedAccount.getId() != groupAccountService.getGroupCreator(entity.getGroup()).getId()) {
             throw new AccessDeniedException("access to accept group invite " + entity + " via account " + authenticatedAccount + " denied");
@@ -71,7 +72,7 @@ public class GroupInviteServiceImpl implements GroupInviteService, Authenticatio
     @Transactional
     @Override
     public void rejectInvite(long id) {
-        Account authenticatedAccount = getAuthenticatedAccount();
+        Account authenticatedAccount = authenticationAccess.getAuthenticatedAccount();
         GroupInvite entity = repository.get(id);
         if (authenticatedAccount.getId() != groupAccountService.getGroupCreator(entity.getGroup()).getId()) {
             throw new AccessDeniedException("access to reject group invite " + entity + " via account " + authenticatedAccount + " denied");

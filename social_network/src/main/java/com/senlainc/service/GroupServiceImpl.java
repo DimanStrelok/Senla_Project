@@ -21,18 +21,19 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Service
-public class GroupServiceImpl implements GroupService, AuthenticationAccess {
+public class GroupServiceImpl implements GroupService {
     private final GroupRepository repository;
     private final GroupMapper mapper;
     private final GroupChatMapper chatMapper;
     private final AccountRepository accountRepository;
     private final GroupAccountService groupAccountService;
     private final AccountMapper accountMapper;
+    private final AuthenticationAccess authenticationAccess;
 
     @Transactional
     @Override
     public GroupDto create(CreateGroupDto createGroupDto) {
-        Account authenticatedAccount = getAuthenticatedAccount();
+        Account authenticatedAccount = authenticationAccess.getAuthenticatedAccount();
         Account account = accountRepository.get(createGroupDto.getAccountId());
         if (authenticatedAccount.getId() != account.getId()) {
             throw new AccessDeniedException("access to create group from account " + account + " via account " + authenticatedAccount + " denied");
@@ -54,7 +55,7 @@ public class GroupServiceImpl implements GroupService, AuthenticationAccess {
     @Transactional
     @Override
     public GroupDto update(GroupDto groupDto) {
-        Account authenticatedAccount = getAuthenticatedAccount();
+        Account authenticatedAccount = authenticationAccess.getAuthenticatedAccount();
         Group entity = repository.get(groupDto.getId());
         if (authenticatedAccount.getId() != groupAccountService.getGroupCreator(entity).getId()) {
             throw new AccessDeniedException("access to update group " + entity + " via account " + authenticatedAccount + " denied");
@@ -68,7 +69,7 @@ public class GroupServiceImpl implements GroupService, AuthenticationAccess {
     @Transactional
     @Override
     public void delete(long id) {
-        Account authenticatedAccount = getAuthenticatedAccount();
+        Account authenticatedAccount = authenticationAccess.getAuthenticatedAccount();
         Group entity = repository.get(id);
         if (authenticatedAccount.getId() != groupAccountService.getGroupCreator(entity).getId()) {
             throw new AccessDeniedException("access to delete group " + entity + " via account " + authenticatedAccount + " denied");
@@ -85,7 +86,7 @@ public class GroupServiceImpl implements GroupService, AuthenticationAccess {
     @Transactional(readOnly = true)
     @Override
     public List<GroupChatDto> getChats(long id) {
-        Account authenticatedAccount = getAuthenticatedAccount();
+        Account authenticatedAccount = authenticationAccess.getAuthenticatedAccount();
         Group entity = repository.get(id);
         if (!groupAccountService.isGroupMember(entity, authenticatedAccount)) {
             throw new AccessDeniedException("access to read group chats from " + entity + " via account " + authenticatedAccount + " denied");

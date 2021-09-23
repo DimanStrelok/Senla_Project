@@ -20,16 +20,17 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Service
-public class PostServiceImpl implements PostService, AuthenticationAccess {
+public class PostServiceImpl implements PostService {
     private final PostRepository repository;
     private final PostMapper mapper;
     private final PostCommentMapper commentMapper;
     private final AccountRepository accountRepository;
+    private final AuthenticationAccess authenticationAccess;
 
     @Transactional
     @Override
     public PostDto create(CreatePostDto createPostDto) {
-        Account authenticatedAccount = getAuthenticatedAccount();
+        Account authenticatedAccount = authenticationAccess.getAuthenticatedAccount();
         Account account = accountRepository.get(createPostDto.getAccountId());
         if (authenticatedAccount.getId() != account.getId()) {
             throw new AccessDeniedException("access to create post from account " + account + " via account " + authenticatedAccount + " denied");
@@ -53,7 +54,7 @@ public class PostServiceImpl implements PostService, AuthenticationAccess {
     @Transactional
     @Override
     public PostDto changeText(long id, String text) {
-        Account authenticatedAccount = getAuthenticatedAccount();
+        Account authenticatedAccount = authenticationAccess.getAuthenticatedAccount();
         Post entity = repository.get(id);
         if (authenticatedAccount.getId() != entity.getAccount().getId()) {
             throw new AccessDeniedException("access to update post " + entity + " via account " + authenticatedAccount + " denied");
@@ -67,7 +68,7 @@ public class PostServiceImpl implements PostService, AuthenticationAccess {
     @Transactional
     @Override
     public void delete(long id) {
-        Account authenticatedAccount = getAuthenticatedAccount();
+        Account authenticatedAccount = authenticationAccess.getAuthenticatedAccount();
         Post entity = repository.get(id);
         if (authenticatedAccount.getId() != entity.getAccount().getId()) {
             throw new AccessDeniedException("access to delete post " + entity + " via account " + authenticatedAccount + " denied");

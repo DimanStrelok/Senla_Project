@@ -19,16 +19,17 @@ import java.time.LocalDateTime;
 
 @RequiredArgsConstructor
 @Service
-public class FriendInviteServiceImpl implements FriendInviteService, AuthenticationAccess {
+public class FriendInviteServiceImpl implements FriendInviteService {
     private final FriendInviteRepository repository;
     private final FriendInviteMapper mapper;
     private final AccountRepository accountRepository;
     private final RelationService relationService;
+    private final AuthenticationAccess authenticationAccess;
 
     @Transactional
     @Override
     public FriendInviteDto create(CreateFriendInviteDto createFriendInviteDto) {
-        Account authenticatedAccount = getAuthenticatedAccount();
+        Account authenticatedAccount = authenticationAccess.getAuthenticatedAccount();
         long fromAccountId = createFriendInviteDto.getFromAccountId();
         long toAccountId = createFriendInviteDto.getToAccountId();
         Account fromAccount = accountRepository.get(fromAccountId);
@@ -51,7 +52,7 @@ public class FriendInviteServiceImpl implements FriendInviteService, Authenticat
     @Transactional
     @Override
     public void acceptInvite(long id) {
-        Account authenticatedAccount = getAuthenticatedAccount();
+        Account authenticatedAccount = authenticationAccess.getAuthenticatedAccount();
         FriendInvite entity = repository.get(id);
         if (authenticatedAccount.getId() != entity.getToAccount().getId()) {
             throw new AccessDeniedException("access to accept friend invite " + entity + " via account " + authenticatedAccount + " denied");
@@ -68,7 +69,7 @@ public class FriendInviteServiceImpl implements FriendInviteService, Authenticat
     @Transactional
     @Override
     public void rejectInvite(long id) {
-        Account authenticatedAccount = getAuthenticatedAccount();
+        Account authenticatedAccount = authenticationAccess.getAuthenticatedAccount();
         FriendInvite entity = repository.get(id);
         if (authenticatedAccount.getId() != entity.getToAccount().getId()) {
             throw new AccessDeniedException("access to reject friend invite " + entity + " via account " + authenticatedAccount + " denied");

@@ -19,16 +19,17 @@ import java.time.LocalDateTime;
 
 @RequiredArgsConstructor
 @Service
-public class PostCommentServiceImpl implements PostCommentService, AuthenticationAccess {
+public class PostCommentServiceImpl implements PostCommentService {
     private final PostCommentRepository repository;
     private final PostCommentMapper mapper;
     private final PostRepository postRepository;
     private final AccountRepository accountRepository;
+    private final AuthenticationAccess authenticationAccess;
 
     @Transactional
     @Override
     public PostCommentDto create(CreatePostCommentDto createPostCommentDto) {
-        Account authenticatedAccount = getAuthenticatedAccount();
+        Account authenticatedAccount = authenticationAccess.getAuthenticatedAccount();
         Post post = postRepository.get(createPostCommentDto.getPostId());
         Account account = accountRepository.get(createPostCommentDto.getAccountId());
         if (authenticatedAccount.getId() != account.getId()) {
@@ -54,7 +55,7 @@ public class PostCommentServiceImpl implements PostCommentService, Authenticatio
     @Transactional
     @Override
     public PostCommentDto changeText(long id, String text) {
-        Account authenticatedAccount = getAuthenticatedAccount();
+        Account authenticatedAccount = authenticationAccess.getAuthenticatedAccount();
         PostComment entity = repository.get(id);
         if (authenticatedAccount.getId() != entity.getAccount().getId()) {
             throw new AccessDeniedException("access to update post comment " + entity + " via account " + authenticatedAccount + " denied");
@@ -68,7 +69,7 @@ public class PostCommentServiceImpl implements PostCommentService, Authenticatio
     @Transactional
     @Override
     public void delete(long id) {
-        Account authenticatedAccount = getAuthenticatedAccount();
+        Account authenticatedAccount = authenticationAccess.getAuthenticatedAccount();
         PostComment entity = repository.get(id);
         if (authenticatedAccount.getId() != entity.getAccount().getId()) {
             throw new AccessDeniedException("access to delete post comment " + entity + " via account " + authenticatedAccount + " denied");
