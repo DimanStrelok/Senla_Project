@@ -59,7 +59,8 @@ public class AccountServiceImpl implements AccountService {
     @Transactional
     @Override
     public void delete(long id) {
-        repository.delete(repository.get(id));
+        Account account = repository.get(id);
+        repository.delete(account);
     }
 
     @Transactional(readOnly = true)

@@ -27,11 +27,18 @@ public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests(
                         authorize -> authorize
+                                .mvcMatchers(HttpMethod.GET, "/account/**").authenticated()
+                                .mvcMatchers(HttpMethod.PUT, "/account/**").authenticated()
+                                .mvcMatchers(HttpMethod.DELETE, "/account/**").authenticated()
+                                .mvcMatchers("/dialog/**").authenticated()
+                                .mvcMatchers("/friend/invite/**").authenticated()
+                                .mvcMatchers("/group/**").authenticated()
+                                .mvcMatchers("/post/**").authenticated()
                                 .mvcMatchers(HttpMethod.POST, "/account").permitAll()
-                                .mvcMatchers("**").authenticated()
+                                .mvcMatchers("**").permitAll()
                 )
                 .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.NEVER))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic(withDefaults());
     }
 

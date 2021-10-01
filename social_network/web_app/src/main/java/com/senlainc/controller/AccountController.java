@@ -1,10 +1,12 @@
 package com.senlainc.controller;
 
+import com.senlainc.MQConfig;
 import com.senlainc.dto.*;
 import com.senlainc.service.AccountService;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,9 +18,11 @@ import java.util.List;
 public class AccountController {
     private static final Logger log = LogManager.getLogger(AccountController.class);
     private final AccountService service;
+    private final RabbitTemplate rabbitTemplate;
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public AccountDto create(@RequestBody CreateAccountDto createAccountDto) {
+        //rabbitTemplate.convertAndSend(MQConfig.queueName, createAccountDto);
         log.info("Request: 'create', params: {}", createAccountDto);
         return service.create(createAccountDto);
     }
@@ -43,6 +47,7 @@ public class AccountController {
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<AccountDto> getAccounts() {
+        rabbitTemplate.convertAndSend(MQConfig.queueName, "Request: 'getAccounts'");
         log.info("Request: 'getAccounts'");
         return service.getAccounts();
     }

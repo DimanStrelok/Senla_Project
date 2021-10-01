@@ -1,16 +1,31 @@
 version: '3.6'
 services:
-  app:
+  web_app:
     build:
-      context: .
+      context: ./web_app
     ports:
       - "8081:8080"
     depends_on:
       - "postgres"
+      - "rabbitmq"
+      - "event_consumer"
     environment:
       - DB_URL=postgres
+      - RABBIT_HOST_NAME=rabbitmq
     command: ./mvnw -Dmaven.repo.local=./.m2 liquibase:update jetty:run
-
+  event_consumer:
+    build:
+      context: ./event_consumer
+    depends_on:
+      - "rabbitmq"
+    environment:
+      - RABBIT_HOST_NAME=rabbitmq
+    command: ./mvnw -Dmaven.repo.local=./.m2 jetty:run
+  rabbitmq:
+    image: rabbitmq:3.9-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
   postgres:
     image: postgres:13.4
     ports:
